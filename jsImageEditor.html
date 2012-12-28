@@ -1,0 +1,485 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <title>Javascript Image Editor</title>
+  <link rel="stylesheet" href="memu-0.1.css" type="text/css">
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+  <style type="text/css">
+  html, body {
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    margin: 0px;
+    overflow: hidden;
+  }
+  .menu-container {
+    width: 100%;
+    height: 26px;
+  }
+  .memu-root, .menu-container, #footer {
+    background-color: #BBBBBB;
+  }
+  </style>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="base64.js"></script>
+  <script type="text/javascript" src="canvas2image.js"></script>
+  <script type="text/javascript" src="jquery.memu-0.1.js"></script>
+  <script type="text/javascript" src="./jquery.ps-color-picker.min.js"></script>
+  <script type="text/javascript">
+
+function initializeLocalStorage() {
+  var template = $('#localStorageElementTemplate').html();
+  var newHtml = "";
+  for (var i = 0, len = localStorage.length; i < len; i++) {
+    if (localStorage.key(i).indexOf("savedImages/") == 0) {
+      var storageName = localStorage.key(i).replace('savedImages/', '');
+      newHtml += template.replace(/\[StorageName\]/g, storageName);
+    }
+  }
+  $('#localStorageElements').html(newHtml);
+}
+
+function saveCanvasToLocalStorage(oCanvas, name) {
+  localStorage.setItem("savedImages/" + name, oCanvas.toDataURL("image/png"));
+  initializeLocalStorage();
+}
+
+function loadFromLocalStorage(oCanvas, elementName) {
+  var img = new Image();
+  img.onload = function(){
+    var myCanvas = $('#image-canvas').get(0);
+    myCanvas.width = img.width;
+    myCanvas.height = img.height;
+    var ctx = myCanvas.getContext('2d');
+    ctx.drawImage(img,0,0);
+  };
+  img.src = localStorage.getItem("savedImages/" + elementName);
+}
+
+function clearLocalStorage(oCanvas) {
+  localStorage.clear();
+}
+
+function saveCanvas(oCanvas, strType) {
+    var bRes = false;
+    if (strType == "PNG")
+      bRes = Canvas2Image.saveAsPNG(oCanvas);
+    if (strType == "BMP")
+      bRes = Canvas2Image.saveAsBMP(oCanvas);
+    if (strType == "JPEG")
+      bRes = Canvas2Image.saveAsJPEG(oCanvas);
+
+    if (!bRes) {
+      alert("Sorry, this browser is not capable of saving " + strType + " files!");
+      return false;
+    }
+  }
+function readURL(input) {
+  if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+          var img = new Image();
+          img.src = e.target.result;
+          img.onload = function(){
+            var myCanvas = $('#image-canvas').get(0);
+            var myInvertedCanvas = $('#image-canvas-filtered').get(0);
+            myCanvas.width = img.width;
+            myCanvas.height = img.height;
+            var ctx = myCanvas.getContext('2d');
+            ctx.drawImage(img,0,0);
+          };
+      }
+
+      reader.readAsDataURL(input.files[0]);
+  }
+}
+  
+function applyGrayScale(inputImageData, outputImageData) {
+  var inputData = inputImageData.data;
+  var outputData = outputImageData.data;
+  for(var i = 0; i < inputData.length; i += 4) {
+    var value = (inputData[i] + inputData[i+1] + inputData[i+2]) / 3;
+    // red
+    outputData[i] = value;
+    // green
+    outputData[i + 1] = value;
+    // blue
+    outputData[i + 2] = value;
+    
+    outputData[i + 3] = 255;
+  }
+}
+
+function applySobel(inputImageData, outputImageData) {
+  var inputData = inputImageData.data;
+  var outputData = outputImageData.data;
+
+  var x_faltungsmatrix = [1, 0, -1, 
+                          2, 0, -2, 
+                          1, 0, -1];
+  
+  var y_faltungsmatrix = [1, 2, 1, 
+                          0, 0, 0, 
+                          -1, -2, -1];  
+  var x_offset = [-1, 0, 1,
+                  -1, 0, 1,
+                  -1, 0, 1];
+  
+  var y_offset = [-1, -1, -1,
+                  0, 0, 0, 
+                  1, 1, 1];
+
+  var faltungsindexes = [  - inputImageData.width - 1, -inputImageData.width, -inputImageData.width + 1, 
+                           -1, 0, 1,
+                           inputImageData.width - 1, inputImageData.width, inputImageData.width + 1];
+
+  var multipliedindexes = new Array();
+  faltungsindexes.forEach(function(e) {
+    multipliedindexes.push(e * 4);
+  });
+  
+  console.log(faltungsindexes);
+  console.log(multipliedindexes);
+  
+  for (var y = 0; y < inputImageData.height; y++) {
+    for (var x = 0; x < inputImageData.width; x++) {
+      var currPosition = (y * inputImageData.width + x) * 4;
+      for (var color = 0; color < 3; color ++) {
+        var sum_x = 0;
+        var sum_y = 0;
+        
+        for (var i = 0; i < 9; i ++) {
+          if (x + x_offset[i] >= 0 &&
+              y + y_offset[i] >= 0 &&
+              x + x_offset[i] < inputImageData.width &&
+              y + y_offset[i] < inputImageData.height) {
+            var neighborPosition = multipliedindexes[i] + currPosition;
+            var summand = 
+                   (inputData[currPosition + color] - inputData[neighborPosition + color]);
+            
+            sum_x += summand * x_faltungsmatrix[i];
+            sum_y += summand * y_faltungsmatrix[i];
+          }
+        }
+        
+        var value = Math.sqrt(sum_x * sum_x + sum_y * sum_y);
+        
+        if (value < 127) {
+          value = 0;
+        } else if (value > 255) {
+          value = 255;
+        }
+        
+        outputData[currPosition + color] = value;
+        outputData[currPosition + 3] =  255;
+      }
+    }
+  }
+}
+
+function getSobelCanvas() {
+  var myCanvas = $('#image-canvas').get(0);
+  var myInvertedCanvas = $('#image-canvas-filtered').get(0);
+  myInvertedCanvas.width = myCanvas.width;
+  myInvertedCanvas.height = myCanvas.height;
+
+  var sourceCanvas = myCanvas.getContext('2d');
+  var targetCanvas = myInvertedCanvas.getContext('2d');
+
+  var sourceData = sourceCanvas.getImageData(0, 0, myCanvas.width, myCanvas.height);
+  var targetData = targetCanvas.createImageData(myCanvas.width, myCanvas.height);
+  applySobel(sourceData, targetData);
+  
+  targetCanvas.putImageData(targetData, 0, 0);
+}
+
+function applyInversion(inputImageData, outputImageData) {
+  
+}
+
+function getGrayCanvas() {
+  var myCanvas = $('#image-canvas').get(0);
+  var myInvertedCanvas = $('#image-canvas-filtered').get(0);
+  myInvertedCanvas.width = myCanvas.width;
+  myInvertedCanvas.height = myCanvas.height;
+
+  var sourceCanvas = myCanvas.getContext('2d');
+  var targetCanvas = myInvertedCanvas.getContext('2d');
+
+  var sourceData = sourceCanvas.getImageData(0, 0, myCanvas.width, myCanvas.height);
+  var targetData = targetCanvas.createImageData(myCanvas.width, myCanvas.height);
+  applyGrayScale(sourceData, targetData);
+  
+  targetCanvas.putImageData(targetData, 0, 0);
+}
+
+function invertCanvas() {
+  var myCanvas = $('#image-canvas').get(0);
+  var myInvertedCanvas = $('#image-canvas-filtered').get(0);
+  myInvertedCanvas.width = myCanvas.width;
+  myInvertedCanvas.height = myCanvas.height;
+
+  var ctx = myCanvas.getContext('2d');
+  var ctxInverted = myInvertedCanvas.getContext('2d');
+
+  var imageData = ctx.getImageData(0, 0, myCanvas.width, myCanvas.height);
+  var data = imageData.data;
+
+  for(var i = 0; i < data.length; i += 4) {
+    // red
+    data[i] = 255 - data[i];
+    // green
+    data[i + 1] = 255 - data[i + 1];
+    // blue
+    data[i + 2] = 255 - data[i + 2];
+  }
+  ctxInverted.putImageData(imageData, 0, 0);
+}
+
+var mousePainting = false;
+var mousePreviousPos = null;
+var mousePreviousPreviousPos = null;
+var canvasContext = null;
+
+function activateMousePaint(canvas, event) {
+  mousePainting = true;
+  canvasContext = canvas.getContext('2d');
+  canvasContext.beginPath();
+  mousePreviousPos = [event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop ];
+  mousePreviousPreviousPos = mousePreviousPos;
+  canvasContext.moveTo(mousePreviousPos[0], mousePreviousPos[1]);
+}
+
+function deactivateMousePaint() {
+  mousePainting = false;
+  mousePreviousPos = null;
+}
+
+function doLining(canvas, event) {
+  var mouseCurrentPos = [event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop ];
+  if (mousePreviousPos != null) {
+    if ((Math.abs(mousePreviousPos[0] - mouseCurrentPos[0]) + Math.abs(mousePreviousPos[1] - mouseCurrentPos[1])) > 5) {
+      canvasContext.beginPath();
+      canvasContext.moveTo(mousePreviousPos[0],mousePreviousPos[1]);
+      // canvasContext.bezierCurveTo(mousePreviousPos[0] - (mousePreviousPreviousPos[0] - mousePreviousPos[0]),  mousePreviousPos[1] - (mousePreviousPreviousPos[1] - mousePreviousPos[1]), mouseCurrentPos[0],mouseCurrentPos[1], mouseCurrentPos[0],mouseCurrentPos[1]);
+      console.log(mouseCurrentPos[0],mouseCurrentPos[1]);
+      canvasContext.lineTo(mouseCurrentPos[0],mouseCurrentPos[1]);
+      canvasContext.lineWidth = 5;
+      canvasContext.strokeStyle = $("#toolColor").css("background-color");
+      canvasContext.stroke();
+      mousePreviousPreviousPos = mousePreviousPos;
+      mousePreviousPos = mouseCurrentPos;
+    }
+  } else {
+    mousePreviousPreviousPos = mousePreviousPos;
+    mousePreviousPos = mouseCurrentPos;
+  }
+}
+
+function doBrushing(canvas, event) {
+  doLining(canvas, event);
+}
+
+function doErasing(canvas, event) {
+  canvasContext.globalCompositeOperation="destination-out";
+  var mouseCurrentPos = [event.clientX - canvas.offsetLeft + $(document).scrollLeft(), event.clientY - canvas.offsetTop  + $(document).scrollTop()];
+  canvasContext.beginPath();
+  canvasContext.arc(mouseCurrentPos[0], mouseCurrentPos[1], 20, 0, 2*Math.PI, true);
+  canvasContext.fillStyle = 'rgba(0,0, 0, 0.05)';
+  canvasContext.strokeStyle = "rgba(0,0, 0, 0.05)";
+  canvasContext.fill();
+  canvasContext.globalCompositeOperation="source-over";
+}
+
+function mousePaint(canvas, event) {
+  if (mousePainting) {
+  switch ($('#activeTool').get(0).value) {
+    case 'line':
+      doLining(canvas, event);
+      break;
+    case 'brush':
+      doBrushing(canvas, event);
+      break;
+    case 'erasor':
+      doErasing(canvas, event);
+      break;
+    }
+  }
+}
+
+</script>
+
+<script type="text/javascript">
+  function resizeHandler(event) {
+    $('#canvasContainer').height($(window).height() - $('.memu-root').height() - $('#footer').height() - $('#tools').height() - $('#uploads').height());
+  }
+  
+  $(document).ready(function(){
+    initializeLocalStorage();
+    $('.js-enabled').memu({ 
+      icon: {
+        inset: true,
+        margin: {
+          top: 4,
+          right: 10
+        }
+      },
+      width: 180,
+      rootWidth: 75,
+      height: 25
+    });
+    
+    $( "#saveDialog" ).dialog({
+      modal: true, 
+      autoOpen: false,
+      show: "blind",
+      hide: "explode"});
+    
+    $("#toolColor").CanvasColorPicker({
+      onColorChange: function(RGB, HSB) {
+        $("#toolColor").css("background-color", "rgb(" + RGB.r + "," + RGB.g + "," + RGB.b + ")");
+      }
+    });
+    $(window).resize(resizeHandler);
+    resizeHandler();
+  });
+</script>
+
+<body>
+    <div id="saveDialog" title="Save">
+      <form id="fileNameForm" href="#" onsubmit="saveCanvasToLocalStorage($('#image-canvas-filtered').get(0), $('#saveFileName').val()); $('#saveDialog').dialog('close'); return false;">
+        <label for="saveFileName">File Name:</label>
+        <input name="saveFileName" id="saveFileName" type="text">
+        <input type="submit" value="Save"></input>
+      </form>
+    </div>
+    <div class="menu-container">
+      <ul class="memu js-enabled">
+        <li class="memu-root">
+          <a href="#">File</a>
+          <ul>
+            <li class="has-children">
+              <a href="#"><div class="memu-icon sprite-page_white"></div>Save</a>
+              <ul>
+                <li><a onclick="saveCanvas($('#image-canvas-filtered').get(0), 'PNG');"><div class="memu-icon sprite-page_white"></div>As PNG</a></li>
+                <li><a onclick="saveCanvas($('#image-canvas-filtered').get(0), 'BMP');"><div class="memu-icon sprite-page_white"></div>As BMP</a></li>
+                <li><a onclick="saveCanvas($('#image-canvas-filtered').get(0), 'JPEG');"><div class="memu-icon sprite-page_white"></div>As JPG</a></li>
+                <li><a onclick="$( '#saveDialog' ).dialog( 'open' );"><div class="memu-icon sprite-page_white"></div>To Local Storage</a></li>
+              </ul>
+            </li>
+                <li><a onclick="clearLocalStorage();"><div class="memu-icon sprite-page_white"></div>Clear Local Storage</a></li>
+            <li><a onclick="$('#fileForm').effect('highlight', {color: '#FF9999'}, 3000);"><div class="memu-icon sprite-folder"></div>Select File</a></li>
+            <li><a href="#"><div class="memu-icon sprite-folder"></div>Open</a>
+              <ul>
+                <li><a onclick="readURL($('#fileUpload').get(0));"><div class="memu-icon sprite-disk_multiple"></div>From File Selection</a></li>
+                <li><a href="#"><div class="memu-icon sprite-folder"></div>From Local Storage</a>
+                  <ul id="localStorageElements">
+                  </ul>
+                  <ul id="localStorageElementTemplate" style="display: none;">
+                    <li><a onclick="loadFromLocalStorage($('#image-canvas-filtered').get(0), '[StorageName]')"><div class="memu-icon sprite-disk_multiple"></div>[StorageName]</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <!-- 
+            <li><a href="#"><div class="memu-icon sprite-disk"></div>Save</a></li>
+            <li><a href="#"><div class="memu-icon sprite-page_white_edit"></div>Page Setup...</a></li>
+            <li><a href="#"><div class="memu-icon sprite-printer"></div>Print</a></li>
+            <li><a href="#"><div class="memu-icon sprite-delete"></div>Exit</a></li>
+             -->
+          </ul>
+        </li>
+        <li class="memu-root">
+          <a href="#">Filter</a>
+          <ul>
+            <li><a onclick="getSobelCanvas();">Sobel</a></li>
+            <li><a onclick="invertCanvas();">Invert</a></li>
+            <li><a onclick="getGrayCanvas();">Gray Scale</a></li>
+            <!-- 
+            <li><a href="#">Copy</a></li>
+            <li><a href="#">Paste</a></li>
+            <li><a href="#">Delete</a></li>
+            <li><a href="#">Find...</a></li>
+            <li><a href="#">Find Next</a></li>
+            <li><a href="#">Replace...</a></li>
+            <li><a href="#">Go To...</a></li>
+            <li><a href="#">Select All</a></li>
+            <li><a href="#">Time/Date</a></li>
+            <li class="has-children">
+              <a href="#">Preferences</a>
+              <ul>
+                <li class="has-children">
+                  <a href="#">Text Color</a>
+                  <ul>
+                    <li><a href="#">Blue</a></li>
+                    <li><a href="#">Red</a></li>
+                    <li><a href="#">Green</a></li>
+                    <li><a href="#">Brown</a></li>
+                    <li><a href="#">Orange</a></li>
+                  </ul>
+                </li>
+                <li class="has-children">
+                  <a href="#">Background</a>
+                  <ul>
+                    <li><a href="#">Blue</a></li>
+                    <li><a href="#">Red</a></li>
+                    <li><a href="#">Green</a></li>
+                    <li><a href="#">Brown</a></li>
+                    <li><a href="#">Orange</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+             -->
+          </ul>
+        </li>
+        <!-- 
+        <li class="memu-root">
+          <a href="#">Format</a>
+          <ul>
+            <li><a href="#">Word Wrap</a></li>
+            <li><a href="#">Font...</a></li>
+          </ul>
+        </li>
+        <li class="memu-root">
+          <a href="#">View</a>
+          <ul>
+            <li><a href="#">Status Bar</a></li>
+          </ul>
+        </li>
+         -->
+      </ul>
+    </div>
+
+  <div id="uploads" style="clear: both;">
+  <form id="fileForm">
+    <b>File-Selection:</b>
+    <input type="file" id="fileUpload" onchange="readURL(this);" />
+  </form>
+  </div>
+  <div id="tools">
+    <b>Tools-Menu:</b>
+    <form id="toolParameters" action="#" style="display: inline;">
+      <label for="activeTool">Tool</label>
+      <select id="activeTool">
+        <option value="line">Line</option>
+        <option value="brush">Brush</option>
+        <option value="erasor">Erasor</option>
+      </select>
+      <label for="toolColor">Color</label>
+      <input type="text" value="#ff0000" id="toolColor" name="toolColor" style="background-color: #ff0000;">
+    </form>
+  </div>
+
+  <div id="canvasContainer" style="overflow: auto; clear: both; overflow: auto; backgound-color: gray;">
+    <canvas id="image-canvas"></canvas>
+    <canvas id="image-canvas-filtered" 
+      onmousedown="activateMousePaint(this, event);" 
+      onmouseup="deactivateMousePaint();"
+      onmousemove="mousePaint(this, event);"
+      onmouseout="deactivateMousePaint();"></canvas>
+  </div>
+  <div id="footer">(c) Andreas Eternach 2012</div>
+</body>
+</html>
