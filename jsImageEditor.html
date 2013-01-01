@@ -311,11 +311,34 @@ function mousePaint(canvas, event) {
 </script>
 
 <script type="text/javascript">
+  function hideNojavascriptLayer() {
+	  $('#noscriptLayer').hide();
+  }
+  
+  function saveUnderstoodFlagToLocalStorage() {
+	  localStorage.setItem("understoodFlag", true);
+  }
+  
+  function displayDisclaimerIfRequired() {
+	var autoOpenValue = false;  
+	if (localStorage.getItem("understoodFlag") === null) {
+		autoOpenValue = true;	
+	};
+    $( "#disclaimerDialog" ).dialog({
+        modal: true, 
+        autoOpen: autoOpenValue,
+        show: "blind",
+        hide: "explode"});
+  }
+  
   function resizeHandler(event) {
     $('#canvasContainer').height($(window).height() - $('.memu-root').height() - $('#footer').height() - $('#tools').height() - $('#uploads').height());
   }
   
   $(document).ready(function(){
+	hideNojavascriptLayer();
+	displayDisclaimerIfRequired();
+	
     initializeLocalStorage();
     $('.js-enabled').memu({ 
       icon: {
@@ -347,11 +370,25 @@ function mousePaint(canvas, event) {
 </script>
 
 <body>
+	<div id="noscriptLayer" style="position:absolute; width: 100%; height: 100%; zindex: 1000;">
+      <span style="color: red; font-weight: bold;">Please enable JavaScript to work with this beautiful application.</span>	
+	</div>
     <div id="saveDialog" title="Save">
       <form id="fileNameForm" href="#" onsubmit="saveCanvasToLocalStorage($('#image-canvas-filtered').get(0), $('#saveFileName').val()); $('#saveDialog').dialog('close'); return false;">
         <label for="saveFileName">File Name:</label>
         <input name="saveFileName" id="saveFileName" type="text">
         <input type="submit" value="Save"></input>
+      </form>
+    </div>
+    <div id="disclaimerDialog" title="Disclaimer">
+	  <p>Attention</p>
+	  <p>
+		This is experminental software.<br/>
+		It is intended as playground for HTML5- / javascript-experiments.<br/>
+		Please do not use with productive data.<br/>
+	  </p>
+      <form id="understoodForm" href="#" onsubmit="saveUnderstoodFlagToLocalStorage(); $('#disclaimerDialog').dialog('close'); return false;">
+        <input type="submit" value="Understood"></input>
       </form>
     </div>
     <div class="menu-container">
@@ -480,6 +517,6 @@ function mousePaint(canvas, event) {
       onmousemove="mousePaint(this, event);"
       onmouseout="deactivateMousePaint();"></canvas>
   </div>
-  <div id="footer">(c) Andreas Eternach 2012</div>
+  <div id="footer">&copy;<a href="mailto:andreas.eternach@gmail.com">Andreas Eternach</a>&nbsp;2012</div>
 </body>
 </html>
