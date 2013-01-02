@@ -471,14 +471,10 @@ function mousePaint(canvas, event) {
              -->
           </ul>
         </li>
-        <!-- 
         <li class="memu-root">
-          <a href="#">Format</a>
-          <ul>
-            <li><a href="#">Word Wrap</a></li>
-            <li><a href="#">Font...</a></li>
-          </ul>
+          <a onclick="$('#disclaimerDialog').dialog('open');">Help</a>
         </li>
+        <!-- 
         <li class="memu-root">
           <a href="#">View</a>
           <ul>
@@ -517,6 +513,6 @@ function mousePaint(canvas, event) {
       onmousemove="mousePaint(this, event);"
       onmouseout="deactivateMousePaint();"></canvas>
   </div>
-  <div id="footer">&copy;<a href="mailto:andreas.eternach@gmail.com">Andreas Eternach</a>&nbsp;2012</div>
+  <div id="footer" style="text-align: right;">&copy;<a href="mailto:andreas.eternach@gmail.com">Andreas Eternach</a>&nbsp;2012</div>
 </body>
 </html>
