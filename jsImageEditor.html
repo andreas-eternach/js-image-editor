@@ -2,8 +2,9 @@
 <html>
 <head>
   <title>Javascript Image Editor</title>
-  <link rel="stylesheet" href="memu-0.1.css" type="text/css">
-  <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+  <link rel="stylesheet" href="./externalLibs/menu/memu-0.1.css" type="text/css" />
+  <link rel="stylesheet" href="./externalLibs/window/css/jquery.window.css" type="text/css" />
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" type="text/css" />
   <style type="text/css">
   html, body {
     width: 100%;
@@ -19,15 +20,19 @@
   .memu-root, .menu-container, #footer {
     background-color: #BBBBBB;
   }
+  
+  .jsImageEditorWindow {
+    position: absolute !important;
+  }
   </style>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
-  <script type="text/javascript" src="base64.js"></script>
-  <script type="text/javascript" src="canvas2image.js"></script>
-  <script type="text/javascript" src="jquery.memu-0.1.js"></script>
-  <script type="text/javascript" src="./jquery.ps-color-picker.min.js"></script>
+  <script type="text/javascript" src="./externalLibs/base64/base64.js"></script>
+  <script type="text/javascript" src="./externalLibs/canvas2image/canvas2image.js"></script>
+  <script type="text/javascript" src="./externalLibs/menu/jquery.memu-0.1.js"></script>
+  <script type="text/javascript" src="./externalLibs/colorpicker/jquery.ps-color-picker.min.js"></script>
+  <script type="text/javascript" src="./externalLibs/window/jquery.window.js"></script>
   <script type="text/javascript">
-
 function initializeLocalStorage() {
   var template = $('#localStorageElementTemplate').html();
   var newHtml = "";
@@ -311,6 +316,7 @@ function mousePaint(canvas, event) {
 </script>
 
 <script type="text/javascript">
+  var canvasWindows={}; 
   function hideNojavascriptLayer() {
 	  $('#noscriptLayer').hide();
   }
@@ -366,11 +372,45 @@ function mousePaint(canvas, event) {
     });
     $(window).resize(resizeHandler);
     resizeHandler();
-  });
+    
+    canvasWindows['originalWindow'] = $("#canvasContainer").window({
+       icon: 'http://mail.google.com/favicon.ico',
+       title: "Original",
+       content: "<canvas id=\"image-canvas\"></canvas>",
+       checkBoundary: true,
+       width: $('#canvasContainer').width() - 50,
+       height: $('#canvasContainer').height() - 50,
+       maxWidth: 10000,
+       maxHeight: 10000,
+       containerClass: "jsImageEditorWindow",
+       z: 90
+    });
+    
+    
+    canvasWindows['resultWindow'] = $("#canvasContainer").window({
+      icon: 'http://mail.google.com/favicon.ico',
+      title: "Result",
+      content: "<canvas id=\"image-canvas-filtered\"" +
+        " onmousedown=\"activateMousePaint(this, event);\"" + 
+        " onmouseup=\"deactivateMousePaint();\"" + 
+        " onmousemove=\"mousePaint(this, event);\"" + 
+        " onmouseout=\"deactivateMousePaint();\"></canvas>",
+      checkBoundary: true,
+      maxWidth: 10000,
+      maxHeight: 10000,
+      width: $('#canvasContainer').width() - 50,
+      height: $('#canvasContainer').height() -50,
+      containerClass: "jsImageEditorWindow",
+      z: 90
+   });
+    
+   canvasWindows['originalWindow'].move(40, 0);
+   canvasWindows['resultWindow'].move(0, 0);
+});
 </script>
 
 <body>
-	<div id="noscriptLayer" style="position:absolute; width: 100%; height: 100%; zindex: 1000;">
+	<div id="noscriptLayer" style="position:absolute; width: 100%; height: 100%; zindex: 1000; background-color: white; ">
       <span style="color: red; font-weight: bold;">Please enable JavaScript to work with this beautiful application.</span>	
 	</div>
     <div id="saveDialog" title="Save">
@@ -505,13 +545,7 @@ function mousePaint(canvas, event) {
     </form>
   </div>
 
-  <div id="canvasContainer" style="overflow: auto; clear: both; overflow: auto; backgound-color: gray;">
-    <canvas id="image-canvas"></canvas>
-    <canvas id="image-canvas-filtered" 
-      onmousedown="activateMousePaint(this, event);" 
-      onmouseup="deactivateMousePaint();"
-      onmousemove="mousePaint(this, event);"
-      onmouseout="deactivateMousePaint();"></canvas>
+  <div id="canvasContainer" style="overflow: auto; clear: both; overflow: auto; backgound-color: gray; position: relative;">
   </div>
   <div id="footer" style="text-align: right;">&copy;<a href="mailto:andreas.eternach@gmail.com">Andreas Eternach</a>&nbsp;2012</div>
 </body>
