@@ -1,0 +1,11 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <title>Plus</title>
+  <rect id="svg_8" height="14" width="0" y="81.5" x="50" stroke-width="3" stroke="#000000" fill="#ffffff"/>
+  <ellipse ry="68" rx="91" id="svg_9" cy="2070" cx="151" fill-opacity="0" stroke-width="3" stroke="#000000" fill="#000000"/>
+  <ellipse ry="74" rx="99" id="svg_10" cy="2058" cx="209" fill-opacity="0" stroke-width="3" stroke="#000000" fill="#000000"/>
+  <line id="svg_2" y2="149.5" x2="251" y1="148.5" x1="52" stroke-width="3" stroke="#000000" fill="none"/>
+  <line id="svg_3" y2="233.5" x2="149" y1="58.5" x1="151" stroke-width="3" stroke="#000000" fill="none"/>
+  <ellipse ry="104.50001" rx="107.5" id="svg_4" cy="149.00001" cx="148.5" stroke-width="3" stroke="#000000" fill="none"/>
+ </g>
+</svg>

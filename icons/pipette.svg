@@ -1,0 +1,14 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <title>Pipette</title>
+  <path fill="#cccccc" stroke="#000000" stroke-width="3" d="m55,243.5c9,-10.80099 9.8425,-13.05099 10.51375,-15.60075c0.67125,-2.54974 1.17125,-5.39925 1.48625,-5.39925c0.315,0 0.315,3.0995 0.73625,5.77425c0.42125,2.67476 1.26375,4.92476 11.26375,15.22575c20,20.60199 2.63,34 -12,34c-14.63,0 -30,-12.39801 -12,-34z" id="svg_11"/>
+  <path fill="#cccccc" stroke="#000000" transform="rotate(44.0019, 102.215, 186.979)" d="m86.11128,133.94997l31.00008,0l1.207,82.7141l-7.66901,14.785l-1.071,1.46399l-4.69299,6.35001l-1.76601,0.74399l-1.742,-0.66998l-5.88498,-6.39996l-1.02301,-1.36401l-7.151,-14.909l-1.20708,-82.71411l0,-0.00002z" id="svg_12"/>
+  <ellipse fill="#7f7f7f" stroke="#000000" stroke-width="0" cx="223" cy="65.5" id="svg_3" rx="21" ry="44" transform="rotate(44.4093, 223, 65.5)"/>
+  <path fill="#000000" fill-opacity="0" stroke="#000000" stroke-width="3" transform="rotate(44.0019, 125.5, 163.172)" d="m110,75.5l31,0l0,152l-7.66862,14.785l-1.07138,1.46399l-4.69299,6.35001l-1.766,0.74399l-1.742,-0.66998l-5.88499,-6.39999l-1.023,-1.36401l-7.15099,-14.90898l0,-152.00001l-0.00002,-0.00001z" id="svg_5"/>
+  <rect fill="#000000" stroke="#000000" stroke-width="0" x="160" y="86.5" width="63" height="19" id="svg_6" transform="rotate(42.5634, 191.5, 96)"/>
+  <rect fill="#ffffff" stroke="#000000" stroke-width="3" x="50" y="81.5" width="0" height="14" id="svg_8"/>
+  <ellipse fill="#000000" stroke="#000000" stroke-width="3" fill-opacity="0" cx="151" cy="2070" id="svg_9" rx="91" ry="68"/>
+  <ellipse fill="#000000" stroke="#000000" stroke-width="3" fill-opacity="0" cx="209" cy="2058" id="svg_10" rx="99" ry="74"/>
+ </g>
+
+</svg>

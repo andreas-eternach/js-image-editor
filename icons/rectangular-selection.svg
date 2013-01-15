@@ -1,0 +1,7 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <title>Rectangular Selection</title>
+  <rect id="svg_2" height="200" width="200" y="50" x="50" stroke-width="2" stroke="#BBBBBB" fill="none"/>
+  <rect id="svg_1" height="200" width="200" y="50" x="50" stroke-width="2" stroke-dasharray="10 10" stroke="#000000" fill="none"/>
+ </g>
+</svg>

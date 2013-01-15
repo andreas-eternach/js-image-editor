@@ -1,0 +1,10 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <title>Freehand Selection</title>
+  <defs>
+    <path id="geometry" d="m62,108c8.6667,-25.33301 46.66666,-17.66666 60,-49c13.33334,-31.33334 53.66667,-23 86,1c32.33333,24 33.66667,55.66666 37,85c3.33333,29.33334 15.33331,57 -1,81c-16.33331,24 -56.66667,38.33331 -85,26c-28.33333,-12.33331 -18,-45.33333 -36,-68c-18,-22.66667 -40.66666,-16.66667 -61,-25c-19.3333,-12.33299 -8.6667,-25.66699 0,-51z"/>
+  </defs>
+  <use xlink:href="#geometry" fill="none" stroke="#BBBBBB" stroke-width="5" />
+  <use xlink:href="#geometry" fill="none" stroke-dasharray="10 10" stroke="black" stroke-width="5"/>
+ </g>
+</svg>

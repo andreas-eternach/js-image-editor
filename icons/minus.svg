@@ -1,0 +1,10 @@
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <title>Minus</title>
+  <ellipse fill="none" stroke="#000000" stroke-width="3" cx="148.5" cy="149.00001" id="svg_4" rx="107.5" ry="104.50001"/>
+  <rect fill="#ffffff" stroke="#000000" stroke-width="3" x="50" y="81.5" width="0" height="14" id="svg_8"/>
+  <ellipse fill="#000000" stroke="#000000" stroke-width="3" fill-opacity="0" cx="151" cy="2070" id="svg_9" rx="91" ry="68"/>
+  <ellipse fill="#000000" stroke="#000000" stroke-width="3" fill-opacity="0" cx="209" cy="2058" id="svg_10" rx="99" ry="74"/>
+  <line fill="none" stroke="#000000" stroke-width="3" x1="64" y1="147.5" x2="234" y2="148.5" id="svg_2"/>
+ </g>
+</svg>
